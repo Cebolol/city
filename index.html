@@ -268,18 +268,20 @@
       }
     }
 
-    function startLevel2() {
-      currentLevel = 2;
-      document.getElementById('levelDisplay').innerText = "LEVEL 2";
-      document.getElementById('btnNext').style.display = "none";
+function startLevel2() {
+  currentLevel = 2;
+  document.getElementById('levelDisplay').innerText = "LEVEL 2";
+  document.getElementById('btnNext').style.display = "none";
 
-      const palette = document.getElementById('palette');
-      palette.appendChild(document.getElementById('card-supermarket'));
-      palette.appendChild(document.getElementById('card-cinema'));
-      palette.appendChild(document.getElementById('card-postoffice'));
+  // Devolver todas las imágenes a la paleta lateral sin interferir con la pantalla
+  const palette = document.getElementById('palette');
+  palette.appendChild(document.getElementById('card-supermarket'));
+  palette.appendChild(document.getElementById('card-cinema'));
+  palette.appendChild(document.getElementById('card-postoffice'));
 
-      alert("Level 2 started! Click 'LISTEN TO THE AUDIO' to hear the new positions.");
-    }
+  // Cancelar cualquier audio anterior que se haya quedado colgado
+  window.speechSynthesis.cancel();
+}
   </script>
 </body>
 </html>
