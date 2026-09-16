@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>City Listening Game - Levels</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      touch-action: manipulation;
+    }
+    h1 { color: #2c3e50; margin-bottom: 5px; font-size: 24px; text-align: center; }
+    .level-indicator {
+      font-size: 18px;
+      font-weight: bold;
+      color: #e67e22;
+      margin-bottom: 15px;
+      background: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 2px solid #e67e22;
+    }
+    .controls { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+    button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      touch-action: manipulation;
+    }
+    button:hover { background-color: #219150; }
+    .btn-check { background-color: #2980b9; }
+    .btn-next { background-color: #8e44ad; display: none; }
+    
+    .game-board {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .map-container {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      background-color: #ddd;
+      background-image: url('mapa.jpg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 3px solid #333;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .drop-zone {
+      position: absolute;
+      width: 110px;
+      height: 100px;
+      border: 2px dashed rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    #z-post   { top: 15px;  left: 15px; }   
+    #z-cinema { top: 195px; left: 195px; }  
+    #z-super  { top: 375px; left: 15px; }   
+
+    .building-palette {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #ccc;
+      min-width: 130px;
+      min-height: 380px;
+    }
+
+    .draggable-card {
+      width: 100px;
+      height: 90px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      background: #fafafa;
+      border: 1px dashed #bbb;
+      border-radius: 8px;
+      touch-action: none;
+      position: relative;
+      z-index: 10;
+    }
+
+    .draggable-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>City Prepositions Listening Game</h1>
+  <div id="levelDisplay" class="level-indicator">LEVEL 1</div>
+
+  <div class="controls">
+    <button onclick="playAudio()">🔊 LISTEN TO THE AUDIO</button>
+    <button class="btn-check" onclick="checkAnswers()">CHECK ANSWERS</button>
+    <button id="btnNext" class="btn-next" onclick="startLevel2()">➡️ GO TO LEVEL 2</button>
+  </div>
+
+  <div class="game-board">
+    <div class="map-container" id="mapContainer">
+      <div id="z-post" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+      <div id="z-cinema" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+      <div id="z-super" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <div class="building-palette" id="palette" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h3 style="margin:0 0 10px 0; text-align:center;">Buildings</h3>
+      
+      <div id="card-supermarket" class="draggable-card" draggable="true" ondragstart="drag(event)">
+        <img id="img-super" src="supermarket.jpg" alt="Supermarket" onerror="this.style.display='none'; this.parentNode.innerText='🛒 Supermarket';">
+      </div>
+
+      <div id="card-cinema" class="draggable-card" draggable="true" ondragstart="drag(event)">
+        <img id="img-cinema" src="cinema.jpg" alt="Cinema" onerror="this.style.display='none'; this.parentNode.innerText='🎬 Cinema';">
+      </div>
+
+      <div id="card-postoffice" class="draggable-card" draggable="true" ondragstart="drag(event)">
+        <img id="img-post" src="postoffice.jpg" alt="Post Office" onerror="this.style.display='none'; this.parentNode.innerText='✉️ Post Office';">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentLevel = 1;
+
+    function playAudio() {
+      let text = "";
+      if (currentLevel === 1) {
+        text = "Look! The supermarket is in front of the hospital. Between the hospital and the bus stop, there is a cinema. Behind the hospital, there is a post office.";
+      } else if (currentLevel === 2) {
+        text = "Welcome to Level 2! Look! The cinema is in front of the hospital. Behind the hospital, there is a supermarket. And between the hospital and the bus stop, there is a post office!";
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.85;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Drag & Drop para Ordenador (Mouse)
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const draggedElement = document.getElementById(data);
+      placeElement(draggedElement, ev.target);
+    }
+
+    function placeElement(element, target) {
+      let targetZone = target;
+      if (!targetZone.classList.contains('drop-zone') && !targetZone.classList.contains('building-palette')) {
+        targetZone = targetZone.closest('.drop-zone') || targetZone.closest('.building-palette');
+      }
+
+      if (targetZone) {
+        if (targetZone.classList.contains('drop-zone') && targetZone.children.length > 0) {
+          document.getElementById('palette').appendChild(targetZone.children[0]);
+        }
+        targetZone.appendChild(element);
+        element.style.position = 'static';
+      }
+    }
+
+    // Soporte Táctil para Tablets (Touch Events)
+    document.querySelectorAll('.draggable-card').forEach(card => {
+      let activeTouch = false;
+      let startX, startY, initialLeft, initialTop;
+
+      card.addEventListener('touchstart', function(e) {
+        activeTouch = true;
+        const touch = e.touches[0];
+        const rect = card.getBoundingClientRect();
+        
+        card.style.position = 'fixed';
+        card.style.zIndex = '1000';
+        card.style.left = rect.left + 'px';
+        card.style.top = rect.top + 'px';
+      }, { passive: false });
+
+      card.addEventListener('touchmove', function(e) {
+        if (!activeTouch) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        card.style.left = (touch.clientX - 50) + 'px';
+        card.style.top = (touch.clientY - 45) + 'px';
+      }, { passive: false });
+
+      card.addEventListener('touchend', function(e) {
+        if (!activeTouch) return;
+        activeTouch = false;
+        
+        card.style.display = 'none'; // Ocultar un instante para detectar el elemento debajo
+        const touch = e.changedTouches[0];
+        const targetUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+        card.style.display = 'flex';
+
+        card.style.position = 'static';
+        card.style.zIndex = '10';
+
+        if (targetUnder) {
+          placeElement(card, targetUnder);
+        } else {
+          document.getElementById('palette').appendChild(card);
+        }
+      });
+    });
+
+    function checkAnswers() {
+      let score = 0;
+
+      if (currentLevel === 1) {
+        if (document.getElementById('z-post').contains(document.getElementById('card-postoffice'))) score++;
+        if (document.getElementById('z-cinema').contains(document.getElementById('card-cinema'))) score++;
+        if (document.getElementById('z-super').contains(document.getElementById('card-supermarket'))) score++;
+
+        if (score === 3) {
+          alert("🎉 Excellent! You completed Level 1!");
+          document.getElementById('btnNext').style.display = "inline-block";
+        } else {
+          alert("Try again! Score: " + score + "/3");
+        }
+      } else if (currentLevel === 2) {
+        if (document.getElementById('z-post').contains(document.getElementById('card-supermarket'))) score++;
+        if (document.getElementById('z-cinema').contains(document.getElementById('card-postoffice'))) score++;
+        if (document.getElementById('z-super').contains(document.getElementById('card-cinema'))) score++;
+
+        if (score === 3) {
+          alert("🏆 CONGRATULATIONS! You passed Level 2!");
+        } else {
+          alert("Try again! Score: " + score + "/3");
+        }
+      }
+    }
+
+    function startLevel2() {
+      currentLevel = 2;
+      document.getElementById('levelDisplay').innerText = "LEVEL 2";
+      document.getElementById('btnNext').style.display = "none";
+
+      const palette = document.getElementById('palette');
+      palette.appendChild(document.getElementById('card-supermarket'));
+      palette.appendChild(document.getElementById('card-cinema'));
+      palette.appendChild(document.getElementById('card-postoffice'));
+
+      alert("Level 2 started! Click 'LISTEN TO THE AUDIO' to hear the new positions.");
+    }
+  </script>
+</body>
+</html>
